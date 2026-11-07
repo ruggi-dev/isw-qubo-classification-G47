@@ -1,1 +1,2 @@
-# isw-qubo-classification-G47
+# README information
+
