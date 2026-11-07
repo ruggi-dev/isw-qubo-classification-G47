@@ -1,0 +1,111 @@
+PROJECT REQUIREMENTS SUMMARY
+
+I reviewed the project specification and the repository files currently present. I distinguish below between explicit requirements in the specification and interpretations or questions that may need confirmation.
+
+1. OBJECTIVE AND EXPECTED OUTCOME
+
+Specified: Build a Python application for binary classification, using QUBO-based feature reduction before training a classifier. The example use case is credit risk, with a binary target (0 or 1). The application should support preprocessing, feature selection, model training, and test-set prediction. (PDF pp. 1–2; sections 7–14)
+
+2. FUNCTIONAL REQUIREMENTS
+
+• Preprocessing: Read a CSV; take the target-column name as an input parameter; remove features with too many missing or zero values according to a configurable threshold; normalize features using z-score, excluding the target; save the normalized dataset and preprocessing statistics. (PDF p. 4, sections 7.1–7.2; pp. 6–7, section 11.1)
+
+• Train/test split: Use the first M records for training and the remaining records for testing. Calculate M from the supplied test-set percentage, and save both datasets as CSV files. (PDF p. 4, section 7.3)
+
+• QUBO feature selection: Formulate feature selection as a QUBO problem. The cost function uses Spearman correlations to favor features associated with the target and discourage redundant features. Vary alpha until the selected feature count is within the requested percentage and tolerance, subject to a maximum number of optimization attempts. Save the selected-feature vector, reduced datasets, and optimization statistics. (PDF pp. 5–9, sections 8 and 11.2; appendix)
+
+• Classification: Implement three binary classifiers, including Random Forest and two others chosen by the group. Accept the classifier as a parameter, train it using the reduced training data, and save the model as a .joblib file. (PDF pp. 5–6, section 9; p. 9, section 11.3)
+
+• Prediction and metrics: Load the saved model and classify the reduced test data. Produce a CSV with row_n, target, prediction, and score. Report metrics including precision, recall and F1 for each class, ROC-AUC, and a confusion matrix. (PDF pp. 6, 9–11, sections 10 and 11.3)
+
+• CLI, automated tests, and GUI: Provide the specified module functions and command-line execution. Include pytest tests for the listed behaviors. Provide a simple GUI to select data, run the processing stages, and view or save key outputs. The GUI is evaluated manually. (PDF pp. 6–12, sections 11–14)
+
+3. TECHNICAL CONSTRAINTS
+
+• Use Python 3.11 or later and open-source libraries. (PDF p. 2, section 2)
+
+• Process numeric input features and a binary 0/1 target. The target column name is supplied at runtime; the program must not assume a fixed name. (PDF pp. 2–4, section 6)
+
+• The supplied trial dataset is described as having 145 features plus the target and 20,000 samples. The program must also handle verification datasets exceeding 1,500,000 samples. (PDF pp. 3–4, section 6)
+
+• Make the project reproducible: declare dependencies in requirements.txt, avoid absolute paths, use seeds where possible, support terminal execution, and do not require Internet access, credentials, or manual input during automated evaluation. CLI execution must not depend on the GUI. (PDF p. 13, section 17)
+
+4. REQUIRED REPOSITORY STRUCTURE
+
+The specification’s minimum layout includes:
+
+README.md
+requirements.txt
+group_info.yaml
+data/
+    input_dataset.csv
+    sample_test_dataset.csv
+src/
+    qubo_project/
+        __init__.py
+        preprocessing.py
+        feature_selection.py
+        model.py
+tests/
+outputs/
+reports/
+    project_report.yaml
+    llm_usage/
+        LOG-GXX-NN.md
+        files/
+
+gui.py is marked optional in the example tree, but a GUI itself is required by section 14; the team may choose its implementation and technology. outputs/ may be empty when submitted. (PDF pp. 2–3, section 4; pp. 13–14, sections 14–16)
+
+There is a data-cleanup detail to check: the example tree names input_dataset.csv, while the delivery instructions say to remove trial datasets from data/, except for the dataset used by automated tests. Confirm which dataset should remain at submission. (PDF pp. 2–3, section 4; pp. 12, 14, sections 13 and 19)
+
+5. INPUTS, OUTPUTS, AND DELIVERABLES
+
+Inputs: CSV datasets, target-column name, and configuration parameters for preprocessing, test split, QUBO selection, and classifier choice.
+
+Outputs: Normalized and feature-reduced datasets; QUBO optimization results; a saved model; test predictions; and associated CSV/JSON statistics. The required interfaces for the three Python modules are described in sections 11.1–11.3.
+
+Deliverables: A complete GitHub repository, the final YAML report, automated tests, LLM interaction logs, and a project that can be downloaded and evaluated automatically. The report should be written in English when possible. (PDF pp. 13–15, sections 15–19)
+
+6. VERIFICATION AND EVALUATION
+
+The automated tests must cover numeric preprocessing, missing values, normalization, a binary feature-selection vector, the selected-feature count, model saving, and the required prediction CSV format. The GUI is assessed manually. The specification lists as errors to avoid an incorrect repository structure, missing CLI or required functions, absent tests or saved model, and undocumented LLM usage. (PDF pp. 12, 14, sections 13 and 18)
+
+Conditional bonuses are described for QUBO cost performance, classifier performance on class 1, the GUI, and automated tests. (PDF p. 15)
+
+7. AMBIGUITIES TO CLARIFY
+
+• Feature-vector length: Section 8.1 appears to use K ambiguously. The vector should normally represent all available features, while K denotes the desired number to select. Confirm the intended interpretation.
+
+• Normalization and leakage: The specification describes normalization before the train/test split. That can expose test-set information to preprocessing. Ask whether that order is intentional or whether normalization should be fitted on training data only.
+
+• Edge cases: Handling of constant features, undefined correlations, residual missing values, and classifiers that do not provide a probability-like score is not fully specified.
+
+• Metrics: The required list names precision, recall, F1, ROC-AUC, and confusion matrix; the example output also includes accuracy. Confirm whether accuracy is expected as a required metric too.
+
+• Data retained at delivery: Clarify which CSV belongs in data/ after trial datasets are removed.
+
+CURRENT REPOSITORY STATUS
+
+• README.md: C:\Users\rugge\Documents\GitHub\isw-qubo-classification-G47\README.md
+• requirements.txt: C:\Users\rugge\Documents\GitHub\isw-qubo-classification-G47\requirements.txt
+• group_info.yaml: C:\Users\rugge\Documents\GitHub\isw-qubo-classification-G47\group_info.yaml
+
+These files exist, but appear incomplete or contain placeholders.
+
+• data/ at C:\Users\rugge\Documents\GitHub\isw-qubo-classification-G47\data contains trial_dataset_ISW.csv, rather than the two filenames shown in the required layout.
+
+• src/qubo_project/ at C:\Users\rugge\Documents\GitHub\isw-qubo-classification-G47\src\qubo_project currently contains only __init__.py; the required modules, tests/, outputs/, and a GUI are not present.
+
+• The report template exists at C:\Users\rugge\Documents\GitHub\isw-qubo-classification-G47\reports\project_report_template.yaml, but the final project_report.yaml does not.
+
+• The LLM log at C:\Users\rugge\Documents\GitHub\isw-qubo-classification-G47\reports\llm_usage\LOG-G47-01.md still contains template fields to complete; the files/ subfolder is not present.
+
+INITIAL CHECKLIST, IN DEPENDENCY ORDER
+
+1. Ask the instructor about the ambiguities above.
+2. Complete the README, dependency list, and group metadata.
+3. Prepare the required test datasets and determine which should remain at delivery.
+4. Implement and test preprocessing, then QUBO feature selection, then model training and prediction, following the prescribed interfaces.
+5. Add and verify the CLI independently of the GUI.
+6. Write the required pytest tests and implement the GUI.
+7. Complete the final report and LLM logs, including the actual prompts, responses, and files used.
