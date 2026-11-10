@@ -1,0 +1,43 @@
+2026-11-10 14:54
+
+We are developing the ISW QUBO-based binary classification project one phase at a time. The preprocessing phase is implemented and its existing tests pass. Implement only the next phase: QUBO-based feature selection and the train/test split required by that phase.
+
+Before editing, inspect Project_Specification.pdf, the existing preprocessing implementation and tests, README.md, requirements.txt, and the repository structure. Follow the specification and existing project conventions. Preserve unrelated work. Do not implement model training, prediction, the GUI, or other phases.
+
+Implement the required module:
+- src/qubo_project/feature_selection.py
+
+Required public function signature:
+def select_features(
+    normalized_csv: str,
+    reducedTrain_csv: str,
+    reducedTest_csv: str,
+    output_ottim_csv: str,
+    output_json: str,
+    target_column: str,
+    percTest: float = 0.30,
+    percSelected: float = 0.20,
+    allowance: int = 1,
+    seed: int = 42,
+    alpha_computations: int = 100,
+):
+
+Requirements:
+1. Follow sections 8 and 11.2 and the QUBO formula in the PDF appendix. Read the formula carefully; do not replace the required QUBO objective with a heuristic feature-ranking method.
+2. Compute absolute Spearman correlations between each feature and the target, and between pairs of features. Implement the required influence/redundancy objective and its QUBO matrix consistently with the specification.
+3. Select features by varying alpha in [0, 1] and optimizing the QUBO until the selected count is within allowance of round(percSelected * number_of_features), or until alpha_computations is reached. Do not add a fixed-cardinality constraint to the QUBO. Handle and document cases where no alpha reaches the requested count.
+4. Use only the first M rows (the training prefix) to compute correlations and perform feature selection. Derive M from percTest as specified. Apply the resulting feature mask to both the training prefix and the remaining test rows; preserve their original order. Do not use test rows to calculate correlations or choose features.
+5. Write reduced training and test CSVs with the selected feature columns and the target as the final column. Preserve the selected feature names and values.
+6. Write the optimization CSV with one record per alpha attempt, including alpha in ascending order, optimization time, selected-feature count, and objective value, as specified.
+7. Write output_json with the required statistics, including the selected vector (in the original feature order), selected feature names, target ratio/count, alpha, optimizer name, seed, number of attempts, train/test sizes, Q-matrix creation time, and optimization timing summary.
+8. Validate inputs and CSV structure; give clear errors for invalid target, non-numeric data, invalid parameters, empty/invalid splits, or unusable correlations. Do not silently hide errors or return success-shaped fallback results.
+9. Consider the specified verification size of over 1,500,000 samples. Keep memory use and runtime in mind, especially when calculating Spearman correlations; document any unavoidable limits or tradeoffs. Avoid absolute paths and network access.
+10. Choose an appropriate open-source QUBO optimizer. Document the algorithm and why it was chosen. If a new runtime dependency is necessary, add it to requirements.txt and explain the choice; do not add dependencies unnecessarily.
+11. Add focused tests consistent with the existing test setup. Cover the QUBO objective/matrix, deterministic behavior with a fixed seed, train/test cut and order, prevention of test-set leakage in selection, selected-vector length and feature count tolerance, CSV/JSON output formats, invalid inputs, and solver/alpha-limit behavior.
+
+The specification explicitly says to normalize the entire dataset before this phase, while also warning against using test data for model fitting. Do not modify preprocessing or silently change that specified order. Report this potential leakage concern as an unresolved specification issue.
+
+After implementation, run the focused tests and the existing suite from WSL:
+python3 -m unittest discover -s tests -v
+
+Report changed files, the optimizer and objective implemented, test command/results, and any assumptions or unresolved issues. Do not update the project report or LLM interaction logs.
