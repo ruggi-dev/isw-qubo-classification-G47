@@ -21,7 +21,7 @@ students:
   - matricola: "60/61/XXXXX"
     name: "Student 2"
 last_update: "YYYY-MM-DD"
-log_id: "GXX-NN"
+log_id: "G47-NN"
 ```
 
 ---
@@ -30,15 +30,15 @@ log_id: "GXX-NN"
 
 ---
 
-## Interaction GXX-MM-DD-001
+## Interaction G47-MM-DD-001
 
 ### 1. LLM and chat information
 
 ```yaml
-llm_name: "ChatGPT / Claude / Gemini / Copilot / Cursor / DeepSeek / Other"
-llm_version_or_model: "e.g. GPT-5, Claude Sonnet 4.5, Gemini 2.5 Pro"
+llm_name: "Copilot"
+llm_version_or_model: "Copilot fusion standard"
 chat_name_or_identifier: "Short name or identifier of the active chat"
-interaction_mode: "web_chat / IDE_assistant / API / desktop_app / other"
+interaction_mode: "IDE_assistant"
 ```
 
 ### 2. Author of the interaction
