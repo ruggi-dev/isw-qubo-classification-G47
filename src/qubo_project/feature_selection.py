@@ -56,6 +56,17 @@ def _read_headers(path: Path) -> list[str]:
     return headers
 
 
+def _close_memmap(array: np.memmap) -> None:
+    """Close the underling mmap object so Windows can clean temporary files."""
+    mmap = getattr(array, "_mmap", None)
+    if mmap is not None:
+        mmap.close()
+    try:
+        array.flush()
+    except ValueError:
+        pass
+
+
 def _rank_and_standardize(values: np.ndarray) -> np.ndarray:
     """Return centered, unit-length average ranks for one numeric column."""
     if values.size < 2:
@@ -104,18 +115,21 @@ def _correlation_matrices(
         shape=(training_rows, feature_count),
     )
 
-    feature_indices = [index for index in range(raw_data.shape[1]) if index != target_index]
-    for feature_position, column_index in enumerate(feature_indices):
-        feature_ranks = _rank_and_standardize(
-            np.asarray(raw_data[:training_rows, column_index])
-        )
-        ranked_features[:, feature_position] = feature_ranks
-        del feature_ranks
+    try:
+        feature_indices = [index for index in range(raw_data.shape[1]) if index != target_index]
+        for feature_position, column_index in enumerate(feature_indices):
+            feature_ranks = _rank_and_standardize(
+                np.asarray(raw_data[:training_rows, column_index])
+            )
+            ranked_features[:, feature_position] = feature_ranks
+            del feature_ranks
 
-    ranked_features.flush()
-    target_correlations = np.asarray(ranked_features.T @ target_ranks)
-    feature_correlations = np.asarray(ranked_features.T @ ranked_features)
-    del ranked_features
+        ranked_features.flush()
+        target_correlations = np.asarray(ranked_features.T @ target_ranks)
+        feature_correlations = np.asarray(ranked_features.T @ ranked_features)
+    finally:
+        _close_memmap(ranked_features)
+        del ranked_features
 
     return (
         np.clip(np.abs(target_correlations), 0.0, 1.0),
@@ -374,17 +388,20 @@ def select_features(
             dtype=np.float64,
             shape=(row_count, len(headers)),
         )
-        matrix_start = time.perf_counter()
-        target_correlations, feature_correlations = _correlation_matrices(
-            raw_data,
-            training_rows,
-            feature_count,
-            target_index,
-            temporary_root / "ranked-features.bin",
-            target_column,
-        )
-        del raw_data
-        q_matrix_creation_time = time.perf_counter() - matrix_start
+        try:
+            matrix_start = time.perf_counter()
+            target_correlations, feature_correlations = _correlation_matrices(
+                raw_data,
+                training_rows,
+                feature_count,
+                target_index,
+                temporary_root / "ranked-features.bin",
+                target_column,
+            )
+            q_matrix_creation_time = time.perf_counter() - matrix_start
+        finally:
+            _close_memmap(raw_data)
+            del raw_data
 
     target_k = int(round(selected_fraction * feature_count))
     selectable_features = np.diag(feature_correlations) > 0

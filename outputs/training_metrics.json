@@ -1,0 +1,12 @@
+{
+  "classifier": "random_forest",
+  "seed": 42,
+  "training_dataset": "outputs\\reduced_train.csv",
+  "target_column": "target",
+  "model_path": "outputs\\model.joblib",
+  "n_samples": 14000,
+  "n_features": 20,
+  "target_1_percentage": 1.4571428571428573,
+  "dataset_input_time": 0.034900099999504164,
+  "training_time": 0.26899549999507144
+}

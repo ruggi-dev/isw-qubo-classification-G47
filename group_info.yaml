@@ -3,7 +3,7 @@ students:
   - matricola: "60/61/66449"
   - matricola: "654321"
 main_llm_used: "copilot"
-paid_subscription_used: true/false
+paid_subscription_used: false
 second_llm_used: "*****"
 third_llm_used: ""
 notes: ""
