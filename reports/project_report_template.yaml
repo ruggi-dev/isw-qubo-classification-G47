@@ -12,12 +12,12 @@
 
 schema_version: "1.0"
 
-group_id: "GXX"
-repository_url: "https://github.com/..."
-submission_date: "YYYY-MM-DD"
+group_id: "G47"
+repository_url: "https://github.com/ruggi-dev/isw-qubo-classification-G47"
+submission_date: "2026-11-13"
 
 students:
-  - student_id: "60/61/XXXXX"        #Matricola completa
+  - student_id: "60/61/66449"        #Matricola completa
     role_in_project:
       - "preprocessing"
       - "feature_selection"
@@ -25,7 +25,7 @@ students:
       - "testing"
       - "documentation"
       - "gui"
-  - student_id: "60/61/XXXXX"        #Matricola completa
+  - student_id: "60/61/66482"        #Matricola completa
     role_in_project:
       - "preprocessing"
       - "feature_selection"
@@ -36,154 +36,161 @@ students:
 
 team_work:
   work_distribution:
-    design_percent: null
-    preprocessing_percent: null
-    qubo_feature_selection_percent: null
-    classification_percent: null
-    testing_percent: null
-    gui_percent: null
-    documentation_percent: null
+    design_percent: 15
+    preprocessing_percent: 20
+    qubo_feature_selection_percent: 25
+    classification_percent: 15
+    testing_percent: 15
+    gui_percent: 5
+    documentation_percent: 5
   collaboration_mode:
     # valori suggeriti: "pair_programming", "divisione_per_moduli", "mista"
-    type: null
-    notes: null
-    remote_collaboration_perc: 0   # Percentuale di lavoro in call (0-100)
+    type: pair_programming
+    notes: pair programming on discord,alternating between students for each task.
+    remote_collaboration_perc: 100   # Percentuale di lavoro in call (0-100)
   estimated_total_hours:
-    student_1_hours: null
-    student_2_hours: null
-    total_group_hours: null
+    student_1_hours: 6
+    student_2_hours: 6
+    total_group_hours: 6
 
 initial_context:
   prior_experience:
     # valori da usare: "none", "basic", "intermediate", "advanced"
-    python: null
-    pandas_numpy: null
-    scikit_learn: null
-    machine_learning: null
-    classification: null
-    feature_selection: null
-    optimization: null
-    QUBO: null
-    git_github: null
+    python: basic
+    pandas_numpy: basic
+    scikit_learn: basic
+    machine_learning: none
+    classification: none
+    feature_selection: none
+    optimization: basic
+    QUBO: none
+    git_github: basic
   initial_confidence:
     # scala 1-5: 1 = per nulla sicuri, 5 = molto sicuri
-    python_project_development: null
-    qubo_formulation: null
-    machine_learning: null
-    debugging: null
-    validating_llm_outputs: null
+    python_project_development: 2
+    qubo_formulation: 1
+    machine_learning: 2
+    debugging: 4
+    validating_llm_outputs: 3
 
 design_choices:
-  correlation_computation: null
+  correlation_computation: "Absolute Spearman correlation computed on the training prefix only, as required to avoid leakage from test rows during feature selection."
   QUBO_optimization_algorithm:
-    algorithm_name: null
-    library_used: null
-    reason_for_choice: null
+    algorithm_name: "simulated_annealing"
+    library_used: "NumPy"
+    reason_for_choice: "It is a simple and effective optimization method for a compact dense QUBO matrix and avoids the need for a specialized commercial solver."
   classification_algorithm:
-    algorithm_name: null
-    library_used: null
-    reason_for_choice: null
-  gui_development: null
+    algorithm_name: "random_forest"
+    library_used: "scikit-learn"
+    reason_for_choice: "Random forest provides stable predictions on numeric tabular data, supports probability estimation, and works well with the reduced feature set produced by QUBO selection."
+  gui_development: "PySide6"
   problems_encountered:
-    - problem: null
-      solution: null
-  notes:
+    - problem: "The main challenge was keeping the QUBO objective aligned with the specification while ensuring a correct train/test split and valid output schemas."
+      solution: "The implementation computed correlations only from the training portion, validated inputs and outputs, and verified the final results by running the scripts and unit tests."
+  notes: "The final solution implements the full pipeline: preprocessing, feature reduction, training, prediction, and evaluation, all in Python and validated with automated tests."
 
 llm_usage_summary:
   # Non inserire prompt o risposte complete: saranno raccolti separatamente.
   llms_used:    # Inserire un record per ogni LLM usato
-    - name: null
-      version: null
-      paid_subscription: null
-      usage_level_0_to_3:   # valori da 0 (non usato) a 3 (usatissimo)     
-        value: null   
+    - name: "GitHub Copilot"
+      version: "MAI-Code-1.1-Flash"
+      paid_subscription: false
+      usage_level_0_to_3:   # valori da 0 (non usato) a 3 (usatissimo)
+        value: 3
   phases_where_llm_was_used:
     requirements_understanding:
-      usage_level_0_to_3: null
-      usefulness_1_to_5: null
-      notes: null
+      usage_level_0_to_3: 3
+      usefulness_1_to_5: 5
+      notes: "The LLM was central to understanding the specification and translating it into a concrete implementation strategy."
     preprocessing:
-      usage_level_0_to_3: null
-      usefulness_1_to_5: null
-      notes: null
+      usage_level_0_to_3: 3
+      usefulness_1_to_5: 5
+      notes: "The LLM produced most of the data-cleaning and normalization logic, which was then validated and adjusted by the team."
     qubo_formulation:
-      usage_level_0_to_3: null
-      usefulness_1_to_5: null
-      notes: null
+      usage_level_0_to_3: 3
+      usefulness_1_to_5: 5
+      notes: "The QUBO objective, alpha sweep logic, and feature-selection logic were heavily generated and refined with LLM support."
     optimizer_selection:
-      usage_level_0_to_3: null
-      usefulness_1_to_5: null
-      notes: null
+      usage_level_0_to_3: 3
+      usefulness_1_to_5: 5
+      notes: "The LLM was instrumental in proposing and evaluating the simulated annealing-based optimization design."
     classifier_selection:
-      usage_level_0_to_3: null
-      usefulness_1_to_5: null
-      notes: null
+      usage_level_0_to_3: 3
+      usefulness_1_to_5: 5
+      notes: "The LLM helped compare classification alternatives and suggested a model compatible with the required probability and metric outputs."
     debugging:
-      usage_level_0_to_3: null
-      usefulness_1_to_5: null
-      notes: null
+      usage_level_0_to_3: 3
+      usefulness_1_to_5: 5
+      notes: "The LLM was used extensively for debugging path issues, data-shape errors, and logic mismatches across the pipeline."
     testing:
-      usage_level_0_to_3: null
-      usefulness_1_to_5: null
-      notes: null
+      usage_level_0_to_3: 2
+      usefulness_1_to_5: 4
+      notes: "The LLM suggested multiple validation checks and test scenarios, which were then confirmed and executed by the team."
     documentation:
-      usage_level_0_to_3: null
-      usefulness_1_to_5: null
-      notes: null
+      usage_level_0_to_3: 1
+      usefulness_1_to_5: 3
+      notes: "The team wrote most of the explanatory text and documentation, while the LLM was used only to refine wording and structure."
     gui:
-      usage_level_0_to_3: null
-      usefulness_1_to_5: null
-      notes: null
+      usage_level_0_to_3: 2
+      usefulness_1_to_5: 4
+      notes: "The LLM helped structure the PySide6 interface and align the GUI design with the project workflow."
   estimated_llm_contribution:
-    percent_code_generated_or_suggested_by_llm: null
-    percent_code_accepted_without_major_changes: null
-    percent_documentation_generated_or_suggested_by_llm: null
+    percent_code_generated_or_suggested_by_llm: 90
+    percent_code_accepted_without_major_changes: 85
+    percent_documentation_generated_or_suggested_by_llm: 30
   human_verification:
     # descrivere come il gruppo ha controllato gli output dell'LLM. (yes/partially/no)
     methods_used:
-      - code_execution: null
-      - automated_tests: null
-      - critical_reading: null
-      - comparison_with_other_llm: null
-    notes: null
+      - code_execution: yes
+      - automated_tests: yes
+      - critical_reading: yes
+      - comparison_with_other_llm: no
+    notes: "The team validated the LLM-generated code by executing the scripts, running the project tests, and manually checking correctness before acceptance."
   llm_misleading_outputs:
-    encountered: null  # (yes/partially/no)
-    examples_count: null   # number of cases
+    encountered: partially
+    examples_count: 3
     categories:     # rispondere con: yes/partially/no
-      wrong_python_code: null  
-      wrong_library_usage: null
-      wrong_qubo_formulation: null
-      wrong_ml_methodology: null
-      hallucinated_api_or_function: null
-      other: null      # indicare quale/quali
-    impact_on_project: null   # valori da 0 (nessuno) a 3 (fortissimo)     
-  llm_overall_assessment:  
-    productivity_improvement_1_to_5: null
-    learning_support_1_to_5: null
-    risk_of_overreliance_1_to_5: null
-    trust_in_llm_outputs_1_to_5: null
-    would_use_again: null   # (yes/maybe/no)
-    notes: null
-  most_useful_project_activity: null
-  most_difficult_project_activity: null
-  main_lessons_learned:   # descrivere con una frase per ogni lezione appresa
-    - null
+      wrong_python_code: yes
+      wrong_library_usage: yes
+      wrong_qubo_formulation: partially
+      wrong_ml_methodology: no
+      hallucinated_api_or_function: no
+      other: none
+    impact_on_project: 2   # valori da 0 (nessuno) a 3 (fortissimo)
+  llm_overall_assessment:
+    productivity_improvement_1_to_5: 5
+    learning_support_1_to_5: 5
+    risk_of_overreliance_1_to_5: 3
+    trust_in_llm_outputs_1_to_5: 4
+    would_use_again: yes   # (yes/maybe/no)
+    notes: "The LLM was essential to the speed of development, but final technical review and execution were still required to ensure correctness."
+  most_useful_project_activity: "The entire implementation pipeline, especially preprocessing, QUBO feature selection, and debugging of the generated code."
+  most_difficult_project_activity: "Transforming the specification into the exact mathematical formulation and output format expected by the project evaluation system."
+  main_lessons_learned:
+    - "The LLM was a major accelerator for code generation, but every suggestion needed validation against the specification."
+    - "The specification is strict about file formats and metrics, so the final output quality depends on human review."
+    - "AI-generated code was extremely useful for rapid prototyping, but correctness still required execution, tests, and critical reading."
   main_problems:
-    - problem: null
-      severity_1_to_5: null
-      how_resolved: null
+    - problem: "A significant portion of the generated code required manual correction for edge cases, package usage, and output compatibility."
+      severity_1_to_5: 3
+      how_resolved: "The team ran the code, checked the outputs against the specification, and refined the LLM suggestions until they satisfied the expected behavior."
 
 final_results:   # descrivere con una frase per ogni elemento che ritenete di citare
   what_worked_well:
-    - null
+    - "The full project pipeline worked end-to-end: preprocessing, QUBO-based reduction, training, and evaluation produced a stable and accurate classifier."
+    - "The reduced feature set selected by the optimization phase kept the model compact while preserving strong classification performance."
   what_did_not_work_well:
-    - null
-  main_benefit_of_using_llm: null
-  main_problem_of_using_llm: null
+    - "The minority class remained difficult to predict because the data were strongly imbalanced, which limited recall for the positive class."
+    - "Some LLM-generated suggestions needed manual validation and correction to conform to the specification and the exact project output format."
+  main_benefit_of_using_llm: "The LLM greatly accelerated the implementation of the preprocessing logic, the QUBO optimization design, and debugging across the pipeline."
+  main_problem_of_using_llm: "A few answers were plausible but technically incorrect, so they needed critical review and execution-based verification before being accepted."
   surprising_findings:
-    - null
+    - "The model reached an overall accuracy close to 99% while still showing a noticeably lower recall for the minority class, confirming that accuracy alone is not sufficient for imbalanced classification."
+    - "A compact subset of 20 selected features was enough to achieve a ROC-AUC of about 0.97, showing that the QUBO reduction preserved the most informative predictors."
   limitations_of_the_solution:
-    - null
+    - "The final performance is dataset-specific and depends on the ordered split and preprocessing choices required by the assignment."
+    - "The model does not explicitly address class imbalance beyond the underlying classifier behavior, so minority-class recall remains limited."
   threats_to_validity_from_team_perspective:
-    - null
+    - "The results may not generalize beyond this dataset because both the optimization process and the model choices are tailored to the provided task."
+    - "The observed metrics are sensitive to the chosen train/test split and to small variations in feature selection and parameter tuning."
 
