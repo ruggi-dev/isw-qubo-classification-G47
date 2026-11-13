@@ -58,6 +58,212 @@ CLASSIFIERS = [
     ("decision_tree", "Decision Tree"),
 ]
 
+CLASSIFIER_DESCRIPTIONS = {
+    "random_forest": (
+        "Combines 100 decision trees. A strong general-purpose choice for "
+        "tabular data that can model non-linear relationships, at the cost "
+        "of being less transparent than a single tree."
+    ),
+    "logistic_regression": (
+        "A linear classifier that estimates class probabilities. It is a "
+        "simple, fast baseline; it may be less suitable when the classes "
+        "cannot be separated by a roughly linear boundary."
+    ),
+    "decision_tree": (
+        "Uses one sequence of feature-based decisions. It is relatively easy "
+        "to interpret, but can overfit and may be less stable than an ensemble."
+    ),
+}
+
+APP_STYLESHEET = """
+QWidget {
+    background-color: #e9efec;
+    color: #1f302b;
+    font-size: 10pt;
+}
+QMainWindow {
+    background-color: #e9efec;
+}
+QFrame#sidebar {
+    background-color: #dce5e0;
+    border-right: 1px solid #b9c9c1;
+}
+QLabel#brandTitle {
+    color: #24483f;
+    font-size: 19pt;
+    font-weight: bold;
+}
+QLabel#pageTitle {
+    color: #223f37;
+    font-size: 17pt;
+    font-weight: bold;
+    padding-bottom: 3px;
+}
+QListWidget#navigation {
+    background: transparent;
+    border: none;
+    outline: none;
+}
+QListWidget#navigation::item {
+    color: #334842;
+    border-radius: 7px;
+    padding: 10px 12px;
+    margin: 2px 0;
+}
+QListWidget#navigation::item:hover {
+    background-color: #ccd9d3;
+}
+QListWidget#navigation::item:selected {
+    background-color: #bdcec6;
+    color: #1e4036;
+    font-weight: 600;
+}
+QPushButton {
+    background-color: #426b60;
+    color: #ffffff;
+    border: 1px solid #426b60;
+    border-radius: 6px;
+    padding: 8px 14px;
+    font-weight: 600;
+}
+QPushButton:hover {
+    background-color: #365b51;
+    border-color: #365b51;
+}
+QPushButton:pressed {
+    background-color: #2a493f;
+}
+QPushButton:disabled {
+    background-color: #c9d5cf;
+    border-color: #c9d5cf;
+    color: #596961;
+}
+QLineEdit, QComboBox, QSpinBox, QDoubleSpinBox,
+QPlainTextEdit, QTextEdit, QTableView, QTableWidget {
+    background-color: #fbfcfb;
+    color: #1f302b;
+    border: 1px solid #adbbb4;
+    border-radius: 6px;
+    padding: 6px;
+    selection-background-color: #c9ddd5;
+    selection-color: #1f302b;
+}
+QLineEdit:focus, QComboBox:focus, QSpinBox:focus, QDoubleSpinBox:focus,
+QPlainTextEdit:focus, QTextEdit:focus, QTableView:focus, QTableWidget:focus {
+    border-color: #527b6e;
+}
+QComboBox::drop-down {
+    background-color: #d3ded8;
+    border-left: 1px solid #adbbb4;
+    width: 25px;
+}
+QComboBox::drop-down:hover {
+    background-color: #bdcec5;
+}
+QGroupBox {
+    background-color: #f5f8f6;
+    border: 1px solid #c5d1ca;
+    border-radius: 8px;
+    margin-top: 12px;
+    padding: 12px;
+    font-weight: 600;
+}
+QGroupBox::title {
+    subcontrol-origin: margin;
+    left: 12px;
+    padding: 0 6px;
+    color: #304c43;
+}
+QHeaderView::section {
+    background-color: #dce6e1;
+    color: #2f433c;
+    border: none;
+    border-bottom: 1px solid #bdcbc3;
+    padding: 8px;
+    font-weight: 600;
+}
+QTableView, QTableWidget {
+    alternate-background-color: #edf2ef;
+    gridline-color: #d5dfd9;
+}
+QStatusBar {
+    background-color: #dce6e1;
+    color: #344840;
+    border-top: 1px solid #b9c9c1;
+}
+QStatusBar::item {
+    border: none;
+}
+QProgressBar {
+    background-color: #c9d7d0;
+    border: none;
+    border-radius: 4px;
+    max-height: 8px;
+    text-align: center;
+}
+QProgressBar::chunk {
+    background-color: #52796e;
+    border-radius: 4px;
+}
+QToolTip {
+    background-color: #f8faf9;
+    color: #1f302b;
+    border: 1px solid #aebfb6;
+    padding: 6px;
+}
+QScrollBar:vertical {
+    background-color: #e2e9e5;
+    width: 10px;
+    margin: 2px;
+}
+QScrollBar::handle:vertical {
+    background-color: #aabcb2;
+    border-radius: 4px;
+    min-height: 24px;
+}
+QScrollBar::handle:vertical:hover {
+    background-color: #8ea59a;
+}
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    height: 0;
+}
+"""
+
+SPIN_CONTROL_STYLESHEET = """
+SPIN_CONTROL::up-button {
+    subcontrol-origin: border;
+    subcontrol-position: top right;
+    width: 23px;
+    background-color: #d3ded8;
+    border-left: 1px solid #adbbb4;
+    border-bottom: 1px solid #adbbb4;
+    border-top-right-radius: 5px;
+}
+SPIN_CONTROL::down-button {
+    subcontrol-origin: border;
+    subcontrol-position: bottom right;
+    width: 23px;
+    background-color: #d3ded8;
+    border-left: 1px solid #adbbb4;
+    border-top: 1px solid #adbbb4;
+    border-bottom-right-radius: 5px;
+}
+SPIN_CONTROL::up-button:hover,
+SPIN_CONTROL::down-button:hover {
+    background-color: #bdcec5;
+}
+SPIN_CONTROL::up-arrow {
+    image: url("SPIN_UP_ARROW_PATH");
+    width: 8px;
+    height: 8px;
+}
+SPIN_CONTROL::down-arrow {
+    image: url("SPIN_DOWN_ARROW_PATH");
+    width: 8px;
+    height: 8px;
+}
+"""
+
 
 def _as_display_path(path: Path | str | None) -> str:
     if path is None:
@@ -95,8 +301,10 @@ class DatasetValidationResult:
 class PipelineMainWindow(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
+        self.setStyleSheet(APP_STYLESHEET)
         self.setWindowTitle("QUBO Classification Pipeline")
         self.resize(1300, 820)
+        self.setMinimumSize(1050, 700)
 
         self.project_root = Path(__file__).resolve().parents[2]
         self.output_dir = self.project_root / "outputs"
@@ -116,6 +324,20 @@ class PipelineMainWindow(QMainWindow):
         self.logs: list[str] = []
 
         self._build_ui()
+        assets_dir = Path(__file__).resolve().parent / "assets"
+        for control_type, spin_class in (
+            (QSpinBox, "QSpinBox"),
+            (QDoubleSpinBox, "QDoubleSpinBox"),
+        ):
+            spin_stylesheet = SPIN_CONTROL_STYLESHEET.replace(
+                "SPIN_CONTROL", spin_class
+            ).replace(
+                "SPIN_UP_ARROW_PATH", (assets_dir / "spin-up.svg").as_posix()
+            ).replace(
+                "SPIN_DOWN_ARROW_PATH", (assets_dir / "spin-down.svg").as_posix()
+            )
+            for spin_control in self.findChildren(control_type):
+                spin_control.setStyleSheet(spin_stylesheet)
         self._configure_defaults()
         self._load_recent_state()
         self.append_log("Application started.")
@@ -124,16 +346,31 @@ class PipelineMainWindow(QMainWindow):
         central = QWidget(self)
         self.setCentralWidget(central)
         main_layout = QHBoxLayout(central)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setSpacing(0)
 
         sidebar = QFrame()
-        sidebar.setFrameShape(QFrame.Shape.StyledPanel)
+        sidebar.setObjectName("sidebar")
+        sidebar.setFrameShape(QFrame.Shape.NoFrame)
         sidebar_layout = QVBoxLayout(sidebar)
+        sidebar_layout.setContentsMargins(18, 24, 16, 20)
+        sidebar_layout.setSpacing(12)
 
         title = QLabel("QUBO Pipeline")
-        title.setStyleSheet("font-size: 20px; font-weight: 600;")
+        title.setObjectName("brandTitle")
         sidebar_layout.addWidget(title)
 
         self.navigation = QListWidget()
+        self.navigation.setObjectName("navigation")
+        self.navigation.setSpacing(4)
+        self.navigation.setTextElideMode(Qt.TextElideMode.ElideRight)
+        self.navigation.setHorizontalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+        )
+        self.navigation.setVerticalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+        )
+        self.navigation.setMinimumHeight(360)
         sections = [
             "Dashboard",
             "Dataset",
@@ -150,8 +387,10 @@ class PipelineMainWindow(QMainWindow):
             self.navigation.addItem(item)
         self.navigation.setCurrentRow(0)
         self.navigation.currentRowChanged.connect(self._switch_page)
-        sidebar_layout.addWidget(self.navigation)
+        sidebar_layout.addWidget(self.navigation, 1)
         sidebar_layout.addStretch(1)
+        sidebar.setMinimumWidth(205)
+        sidebar.setMaximumWidth(250)
         main_layout.addWidget(sidebar, 1)
 
         self.stack = QStackedWidget()
@@ -173,12 +412,18 @@ class PipelineMainWindow(QMainWindow):
     def _switch_page(self, index: int) -> None:
         self.stack.setCurrentIndex(index)
 
+    def _create_page_layout(self, page: QWidget) -> QVBoxLayout:
+        layout = QVBoxLayout(page)
+        layout.setContentsMargins(28, 24, 28, 24)
+        layout.setSpacing(14)
+        return layout
+
     def _build_dashboard_page(self) -> QWidget:
         page = QWidget()
-        layout = QVBoxLayout(page)
+        layout = self._create_page_layout(page)
 
         title = QLabel("Project dashboard")
-        title.setStyleSheet("font-size: 24px; font-weight: 600;")
+        title.setObjectName("pageTitle")
         layout.addWidget(title)
 
         summary = QTextEdit()
@@ -190,7 +435,8 @@ class PipelineMainWindow(QMainWindow):
             "3. Run QUBO-based feature reduction\n"
             "4. Train a classifier and save the model\n"
             "5. Predict on the reduced test data and review evaluation metrics\n\n"
-            "Guided mode uses default project values. Advanced mode exposes additional parameters."
+            "Beginner mode resets the available controls to recommended defaults. "
+            "Advanced mode keeps your chosen values; it does not add extra controls."
         )
         layout.addWidget(summary)
 
@@ -205,16 +451,23 @@ class PipelineMainWindow(QMainWindow):
 
     def _build_dataset_page(self) -> QWidget:
         page = QWidget()
-        layout = QVBoxLayout(page)
+        layout = self._create_page_layout(page)
 
         title = QLabel("Dataset import and validation")
-        title.setStyleSheet("font-size: 20px; font-weight: 600;")
+        title.setObjectName("pageTitle")
         layout.addWidget(title)
 
         form = QGridLayout()
+        form.setHorizontalSpacing(14)
+        form.setVerticalSpacing(12)
         dataset_label = QLabel("CSV file")
         self.dataset_path_edit = QLineEdit()
+        self.dataset_path_edit.setToolTip(
+            "Path to a CSV file with a header row, numeric feature columns, "
+            "and a binary target column."
+        )
         browse_btn = QPushButton("Browse")
+        browse_btn.setToolTip("Choose a CSV dataset from your computer.")
         browse_btn.clicked.connect(self._browse_dataset)
         form.addWidget(dataset_label, 0, 0)
         form.addWidget(self.dataset_path_edit, 0, 1)
@@ -222,10 +475,23 @@ class PipelineMainWindow(QMainWindow):
 
         target_label = QLabel("Target column")
         self.target_combo = QComboBox()
+        self.target_combo.setToolTip(
+            "Choose the column containing the labels to predict. It must "
+            "contain only 0 and 1 and is not treated as an input feature."
+        )
         self.target_combo.currentTextChanged.connect(self._on_target_changed)
         form.addWidget(target_label, 1, 0)
         form.addWidget(self.target_combo, 1, 1)
         layout.addLayout(form)
+
+        dataset_help = QLabel(
+            "Select the label column (0/1), not a feature. The target is used "
+            "to train and evaluate the classifier; all other columns are "
+            "candidate numeric features. Review validation warnings before "
+            "continuing."
+        )
+        dataset_help.setWordWrap(True)
+        layout.addWidget(dataset_help)
 
         self.dataset_summary = QLabel("No dataset selected yet.")
         layout.addWidget(self.dataset_summary)
@@ -233,6 +499,7 @@ class PipelineMainWindow(QMainWindow):
         preview_group = QGroupBox("Dataset preview")
         preview_layout = QVBoxLayout(preview_group)
         self.preview_table = QTableView()
+        self.preview_table.setAlternatingRowColors(True)
         preview_layout.addWidget(self.preview_table)
         layout.addWidget(preview_group)
 
@@ -256,22 +523,38 @@ class PipelineMainWindow(QMainWindow):
 
     def _build_preprocessing_page(self) -> QWidget:
         page = QWidget()
-        layout = QVBoxLayout(page)
+        layout = self._create_page_layout(page)
 
         title = QLabel("Preprocessing configuration")
-        title.setStyleSheet("font-size: 20px; font-weight: 600;")
+        title.setObjectName("pageTitle")
         layout.addWidget(title)
 
         form = QGridLayout()
+        form.setHorizontalSpacing(14)
+        form.setVerticalSpacing(12)
         self.min_valid_spin = QDoubleSpinBox()
         self.min_valid_spin.setMinimum(0.0)
         self.min_valid_spin.setMaximum(1.0)
         self.min_valid_spin.setSingleStep(0.01)
         self.min_valid_spin.setValue(0.05)
         self.min_valid_spin.setDecimals(4)
+        self.min_valid_spin.setToolTip(
+            "Minimum fraction of all rows where a feature must have a "
+            "non-missing, non-zero value. Range: 0 to 1. For example, 0.05 "
+            "keeps features that are valid and non-zero in at least 5% of rows. "
+            "Higher values drop more features."
+        )
         form.addWidget(QLabel("Minimum valid proportion"), 0, 0)
         form.addWidget(self.min_valid_spin, 0, 1)
         layout.addLayout(form)
+
+        preprocessing_help = QLabel(
+            "Features below this threshold are removed. Retained feature values "
+            "are z-score normalized; missing values are filled with the column "
+            "mean. The target column is preserved unchanged."
+        )
+        preprocessing_help.setWordWrap(True)
+        layout.addWidget(preprocessing_help)
 
         self.preprocessing_summary = QLabel("No preprocessing run yet.")
         layout.addWidget(self.preprocessing_summary)
@@ -294,13 +577,15 @@ class PipelineMainWindow(QMainWindow):
 
     def _build_feature_page(self) -> QWidget:
         page = QWidget()
-        layout = QVBoxLayout(page)
+        layout = self._create_page_layout(page)
 
         title = QLabel("Feature selection")
-        title.setStyleSheet("font-size: 20px; font-weight: 600;")
+        title.setObjectName("pageTitle")
         layout.addWidget(title)
 
         form = QGridLayout()
+        form.setHorizontalSpacing(14)
+        form.setVerticalSpacing(12)
         self.perc_test_spin = QDoubleSpinBox()
         self.perc_test_spin.setRange(0.01, 0.9)
         self.perc_test_spin.setSingleStep(0.01)
@@ -317,6 +602,25 @@ class PipelineMainWindow(QMainWindow):
         self.selection_seed_spin = QSpinBox()
         self.selection_seed_spin.setRange(0, 100000)
         self.selection_seed_spin.setValue(42)
+        self.perc_test_spin.setToolTip(
+            "Fraction of rows reserved for testing (0.01 to 0.90). The split "
+            "preserves row order: the first rows are used for training and the "
+            "remaining rows for testing. Larger values leave fewer rows for training."
+        )
+        self.perc_selected_spin.setToolTip(
+            "Desired fraction of input features to keep (0 to 1). The optimizer "
+            "converts this fraction into a target feature count. Use a value "
+            "above 0 if you plan to train a model."
+        )
+        self.allowance_spin.setToolTip(
+            "How far the selected feature count may differ from the target "
+            "count and still count as reached. 0 requires an exact match; "
+            "larger values allow a wider difference."
+        )
+        self.selection_seed_spin.setToolTip(
+            "Seed for the QUBO simulated-annealing search. Reusing the same "
+            "seed and data makes the search reproducible."
+        )
 
         form.addWidget(QLabel("Test set percentage"), 0, 0)
         form.addWidget(self.perc_test_spin, 0, 1)
@@ -327,6 +631,15 @@ class PipelineMainWindow(QMainWindow):
         form.addWidget(QLabel("Optimization seed"), 3, 0)
         form.addWidget(self.selection_seed_spin, 3, 1)
         layout.addLayout(form)
+
+        selection_help = QLabel(
+            "Feature selection uses correlations from the training portion only. "
+            "If the requested count is not reached within the allowance, the "
+            "closest result is kept and the status reports that the target was "
+            "not reached. The seed helps reproduce the optimization."
+        )
+        selection_help.setWordWrap(True)
+        layout.addWidget(selection_help)
 
         self.feature_summary = QLabel("No feature reduction run yet.")
         layout.addWidget(self.feature_summary)
@@ -349,25 +662,44 @@ class PipelineMainWindow(QMainWindow):
 
     def _build_training_page(self) -> QWidget:
         page = QWidget()
-        layout = QVBoxLayout(page)
+        layout = self._create_page_layout(page)
 
         title = QLabel("Model training")
-        title.setStyleSheet("font-size: 20px; font-weight: 600;")
+        title.setObjectName("pageTitle")
         layout.addWidget(title)
 
         form = QGridLayout()
+        form.setHorizontalSpacing(14)
+        form.setVerticalSpacing(12)
         self.classifier_combo = QComboBox()
         for key, label in CLASSIFIERS:
             self.classifier_combo.addItem(label, key)
+            self.classifier_combo.setItemData(
+                self.classifier_combo.count() - 1,
+                CLASSIFIER_DESCRIPTIONS[key],
+                Qt.ItemDataRole.ToolTipRole,
+            )
         self.classifier_combo.setCurrentText("Random Forest")
         self.training_seed_spin = QSpinBox()
         self.training_seed_spin.setRange(0, 100000)
         self.training_seed_spin.setValue(42)
+        self.training_seed_spin.setToolTip(
+            "Controls randomized behavior where the classifier uses it. "
+            "Using the same seed with the same data helps reproduce training."
+        )
         form.addWidget(QLabel("Classifier"), 0, 0)
         form.addWidget(self.classifier_combo, 0, 1)
         form.addWidget(QLabel("Random seed"), 1, 0)
         form.addWidget(self.training_seed_spin, 1, 1)
         layout.addLayout(form)
+
+        self.classifier_help = QLabel()
+        self.classifier_help.setWordWrap(True)
+        self.classifier_combo.currentIndexChanged.connect(
+            self._update_classifier_description
+        )
+        self._update_classifier_description(self.classifier_combo.currentIndex())
+        layout.addWidget(self.classifier_help)
 
         self.training_summary = QLabel("No training run yet.")
         layout.addWidget(self.training_summary)
@@ -385,16 +717,26 @@ class PipelineMainWindow(QMainWindow):
 
     def _build_prediction_page(self) -> QWidget:
         page = QWidget()
-        layout = QVBoxLayout(page)
+        layout = self._create_page_layout(page)
 
         title = QLabel("Prediction and evaluation")
-        title.setStyleSheet("font-size: 20px; font-weight: 600;")
+        title.setObjectName("pageTitle")
         layout.addWidget(title)
+
+        prediction_help = QLabel(
+            "Prediction uses the trained model on the reduced test set. The test "
+            "CSV must have the same feature columns as the training data and "
+            "include the target labels so the predictions can be evaluated. "
+            "Each score is the estimated probability of class 1."
+        )
+        prediction_help.setWordWrap(True)
+        layout.addWidget(prediction_help)
 
         self.evaluation_summary = QLabel("No prediction run yet.")
         layout.addWidget(self.evaluation_summary)
 
         self.prediction_table = QTableWidget()
+        self.prediction_table.setAlternatingRowColors(True)
         layout.addWidget(self.prediction_table)
 
         actions = QHBoxLayout()
@@ -410,19 +752,31 @@ class PipelineMainWindow(QMainWindow):
 
     def _build_results_page(self) -> QWidget:
         page = QWidget()
-        layout = QVBoxLayout(page)
+        layout = self._create_page_layout(page)
 
         title = QLabel("Results and metrics")
-        title.setStyleSheet("font-size: 20px; font-weight: 600;")
+        title.setObjectName("pageTitle")
         layout.addWidget(title)
 
+        results_help = QLabel(
+            "Accuracy is the share of correct predictions. Precision measures "
+            "how many predicted positives are correct; recall measures how many "
+            "actual positives were found; F1 balances precision and recall. "
+            "ROC-AUC summarizes class separation across thresholds. In the "
+            "confusion matrix, rows are actual classes and columns are predicted classes."
+        )
+        results_help.setWordWrap(True)
+        layout.addWidget(results_help)
+
         self.metric_table = QTableWidget(0, 2)
+        self.metric_table.setAlternatingRowColors(True)
         self.metric_table.setHorizontalHeaderLabels(["Metric", "Value"])
         layout.addWidget(self.metric_table)
 
         cm_group = QGroupBox("Confusion matrix")
         cm_layout = QVBoxLayout(cm_group)
         self.confusion_matrix = QTableWidget(2, 2)
+        self.confusion_matrix.setAlternatingRowColors(True)
         self.confusion_matrix.setHorizontalHeaderLabels(["Pred 0", "Pred 1"])
         self.confusion_matrix.setVerticalHeaderLabels(["Actual 0", "Actual 1"])
         cm_layout.addWidget(self.confusion_matrix)
@@ -434,6 +788,10 @@ class PipelineMainWindow(QMainWindow):
 
         actions = QHBoxLayout()
         export_btn = QPushButton("Export results")
+        export_btn.setToolTip(
+            "Copy the generated model and available CSV artifacts to a folder "
+            "you choose."
+        )
         export_btn.clicked.connect(self._export_results)
         actions.addWidget(export_btn)
         actions.addStretch(1)
@@ -445,16 +803,22 @@ class PipelineMainWindow(QMainWindow):
 
     def _build_settings_page(self) -> QWidget:
         page = QWidget()
-        layout = QVBoxLayout(page)
+        layout = self._create_page_layout(page)
 
         title = QLabel("Settings and logs")
-        title.setStyleSheet("font-size: 20px; font-weight: 600;")
+        title.setObjectName("pageTitle")
         layout.addWidget(title)
 
         form = QGridLayout()
+        form.setHorizontalSpacing(14)
+        form.setVerticalSpacing(12)
         output_label = QLabel("Output folder")
         self.output_path_edit = QLineEdit(str(self.output_dir))
+        self.output_path_edit.setToolTip(
+            "Folder where pipeline outputs are saved. It is created if it does not exist."
+        )
         browse_output = QPushButton("Browse")
+        browse_output.setToolTip("Choose a different output folder.")
         browse_output.clicked.connect(self._browse_output_dir)
         form.addWidget(output_label, 0, 0)
         form.addWidget(self.output_path_edit, 0, 1)
@@ -463,17 +827,40 @@ class PipelineMainWindow(QMainWindow):
         mode_label = QLabel("Mode")
         self.mode_combo = QComboBox()
         self.mode_combo.addItems(["Beginner", "Advanced"])
+        self.mode_combo.setItemData(
+            0,
+            "Resets the preprocessing threshold, feature-selection settings, "
+            "classifier, and seeds to the recommended defaults.",
+            Qt.ItemDataRole.ToolTipRole,
+        )
+        self.mode_combo.setItemData(
+            1,
+            "Keeps the values you set in the available controls. The current "
+            "GUI does not expose additional controls in this mode.",
+            Qt.ItemDataRole.ToolTipRole,
+        )
         self.mode_combo.setCurrentText(self.mode)
         self.mode_combo.currentTextChanged.connect(self._set_mode)
         form.addWidget(mode_label, 1, 0)
         form.addWidget(self.mode_combo, 1, 1)
         layout.addLayout(form)
 
+        settings_help = QLabel(
+            "Beginner resets available settings to their defaults. Advanced "
+            "preserves your current selections so you can adjust them manually; "
+            "it does not reveal extra parameters."
+        )
+        settings_help.setWordWrap(True)
+        layout.addWidget(settings_help)
+
         self.log_view = QPlainTextEdit()
         self.log_view.setReadOnly(True)
         layout.addWidget(self.log_view)
 
         save_button = QPushButton("Save selected output folder")
+        save_button.setToolTip(
+            "Apply the folder shown above as the destination for pipeline outputs."
+        )
         save_button.clicked.connect(self._apply_output_dir)
         layout.addWidget(save_button)
         return page
@@ -529,6 +916,10 @@ class PipelineMainWindow(QMainWindow):
             self.training_seed_spin.setValue(42)
             self.classifier_combo.setCurrentText("Random Forest")
         self.append_log(f"Workflow mode changed to: {mode}")
+
+    def _update_classifier_description(self, index: int) -> None:
+        classifier = str(self.classifier_combo.itemData(index))
+        self.classifier_help.setText(CLASSIFIER_DESCRIPTIONS[classifier])
 
     def _on_target_changed(self, target_name: str) -> None:
         self.current_target = target_name or None

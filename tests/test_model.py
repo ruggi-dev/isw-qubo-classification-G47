@@ -1,7 +1,9 @@
 import csv
+import io
 import json
 import tempfile
 import unittest
+from contextlib import redirect_stdout
 from pathlib import Path
 
 from src.qubo_project.model import main, predict, train
@@ -266,46 +268,55 @@ class ModelTests(unittest.TestCase):
     def test_training_and_prediction_cli_commands(self) -> None:
         self.write_training_data()
         model_path = self.directory / "cli.joblib"
-        self.assertEqual(
-            main(
-                [
-                    "train",
-                    "--classifier",
-                    "decision_tree",
-                    "--in-reduced",
-                    str(self.training_path),
-                    "--target",
-                    "outcome",
-                    "--out-model",
-                    str(model_path),
-                    "--out-metrics",
-                    str(self.directory / "cli-training.json"),
-                    "--seed",
-                    "42",
-                ]
-            ),
-            0,
-        )
+        training_output = io.StringIO()
+        with redirect_stdout(training_output):
+            self.assertEqual(
+                main(
+                    [
+                        "train",
+                        "--classifier",
+                        "decision_tree",
+                        "--in-reduced",
+                        str(self.training_path),
+                        "--target",
+                        "outcome",
+                        "--out-model",
+                        str(model_path),
+                        "--out-metrics",
+                        str(self.directory / "cli-training.json"),
+                        "--seed",
+                        "42",
+                    ]
+                ),
+                0,
+            )
+        self.assertEqual(training_output.getvalue(), "Training completed successfully.\n")
         self.write_csv(
             self.test_path, ["left", "right", "outcome"], self.prediction_rows()
         )
+        prediction_output = io.StringIO()
+        with redirect_stdout(prediction_output):
+            self.assertEqual(
+                main(
+                    [
+                        "predict",
+                        "--input-testset",
+                        str(self.test_path),
+                        "--target",
+                        "outcome",
+                        "--model",
+                        str(model_path),
+                        "--out-predictions",
+                        str(self.directory / "cli-predictions.csv"),
+                        "--out-stats",
+                        str(self.directory / "cli-stats.json"),
+                    ]
+                ),
+                0,
+            )
         self.assertEqual(
-            main(
-                [
-                    "predict",
-                    "--input-testset",
-                    str(self.test_path),
-                    "--target",
-                    "outcome",
-                    "--model",
-                    str(model_path),
-                    "--out-predictions",
-                    str(self.directory / "cli-predictions.csv"),
-                    "--out-stats",
-                    str(self.directory / "cli-stats.json"),
-                ]
-            ),
-            0,
+            prediction_output.getvalue(),
+            "Prediction and evaluation completed successfully.\n",
         )
         self.assertTrue((self.directory / "cli-predictions.csv").is_file())
 

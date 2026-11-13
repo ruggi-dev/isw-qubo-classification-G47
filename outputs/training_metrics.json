@@ -7,6 +7,6 @@
   "n_samples": 14000,
   "n_features": 20,
   "target_1_percentage": 1.4571428571428573,
-  "dataset_input_time": 0.034900099999504164,
-  "training_time": 0.26899549999507144
+  "dataset_input_time": 0.016175799999473384,
+  "training_time": 0.15103309999904013
 }

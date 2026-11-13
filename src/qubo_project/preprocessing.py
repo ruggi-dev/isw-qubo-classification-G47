@@ -339,6 +339,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         )
     except (OSError, ValueError) as exc:
         parser.error(str(exc))
+    print("Preprocessing completed successfully.")
     return 0
 
 

@@ -2,8 +2,8 @@
   "n_input_features": 146,
   "n_kept_features": 100,
   "dataset_size": 20000,
-  "dataset_input_time": 1.4242739000037545,
-  "dataset_processing_time": 3.8318942000041716,
+  "dataset_input_time": 0.9918665000004694,
+  "dataset_processing_time": 2.591427699997439,
   "dropped_feature_names": [
     "member_id",
     "pymnt_plan",

@@ -1,7 +1,9 @@
 import csv
+import io
 import json
 import tempfile
 import unittest
+from contextlib import redirect_stdout
 from pathlib import Path
 
 from src.qubo_project.preprocessing import fit_normalize, main
@@ -137,24 +139,29 @@ class FitNormalizeTests(unittest.TestCase):
             ]
         )
 
-        result = main(
-            [
-                "--input",
-                str(self.input_path),
-                "--target",
-                "outcome",
-                "--out-data",
-                str(self.normalized_path),
-                "--out-json",
-                str(self.statistics_path),
-                "--min-perc-valid",
-                "0.5",
-            ]
-        )
+        output = io.StringIO()
+        with redirect_stdout(output):
+            result = main(
+                [
+                    "--input",
+                    str(self.input_path),
+                    "--target",
+                    "outcome",
+                    "--out-data",
+                    str(self.normalized_path),
+                    "--out-json",
+                    str(self.statistics_path),
+                    "--min-perc-valid",
+                    "0.5",
+                ]
+            )
 
         self.assertEqual(result, 0)
         self.assertTrue(self.normalized_path.is_file())
         self.assertTrue(self.statistics_path.is_file())
+        self.assertEqual(
+            output.getvalue(), "Preprocessing completed successfully.\n"
+        )
 
 
 if __name__ == "__main__":

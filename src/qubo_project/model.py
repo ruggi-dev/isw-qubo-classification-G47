@@ -169,7 +169,6 @@ def train(
             if temporary_path.exists():
                 temporary_path.unlink()
 
-    print(json.dumps(statistics, indent=2, allow_nan=False))
     return statistics
 
 
@@ -304,7 +303,6 @@ def predict(
             if temporary_path.exists():
                 temporary_path.unlink()
 
-    print(json.dumps(statistics, indent=2, allow_nan=False))
     return statistics
 
 
@@ -339,6 +337,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 args.out_metrics,
                 args.seed,
             )
+            print("Training completed successfully.")
         else:
             predict(
                 args.input_testset,
@@ -347,6 +346,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 args.out_predictions,
                 args.out_stats,
             )
+            print("Prediction and evaluation completed successfully.")
     except (OSError, ValueError) as exc:
         parser.error(str(exc))
     return 0
