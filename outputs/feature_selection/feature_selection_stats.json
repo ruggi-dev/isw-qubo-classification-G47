@@ -1,7 +1,7 @@
 {
-  "n_features": 100,
+  "n_features": 107,
   "target_ratio": 0.2,
-  "target_k": 20,
+  "target_k": 21,
   "allowance": 1,
   "n_selected": 20,
   "alpha": 0.98989898989899,
@@ -105,6 +105,13 @@
     0,
     0,
     0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
     0
   ],
   "selected_feature_names": [
@@ -135,8 +142,8 @@
   "percTest": 0.3,
   "training_dataset_size": 14000,
   "test_dataset_size": 6000,
-  "q_matrix_creation_time": 0.07468149999840534,
-  "mean_optimization_time": 0.010078772727314517,
-  "std_dev_optimization_time": 0.0010429109200634477,
+  "q_matrix_creation_time": 0.09025650003241026,
+  "mean_optimization_time": 0.010997248484805695,
+  "std_dev_optimization_time": 0.0011440999744460462,
   "target_reached": true
 }

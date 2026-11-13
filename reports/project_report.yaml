@@ -1,0 +1,183 @@
+schema_version: "1.0"
+
+group_id: "G47"
+repository_url: "https://github.com/ruggi-dev/isw-qubo-classification-G47"
+submission_date: "2026-11-13"
+
+students:
+  - student_id: "60/61/66449"
+    role_in_project:
+      - "preprocessing"
+      - "feature_selection"
+      - "classification"
+      - "testing"
+      - "documentation"
+      - "gui"
+  - student_id: "60/61/66482"
+    role_in_project:
+      - "preprocessing"
+      - "feature_selection"
+      - "classification"
+      - "testing"
+      - "documentation"
+      - "gui"
+
+team_work:
+  work_distribution:
+    design_percent: 15
+    preprocessing_percent: 20
+    qubo_feature_selection_percent: 25
+    classification_percent: 15
+    testing_percent: 15
+    gui_percent: 5
+    documentation_percent: 5
+  collaboration_mode:
+    type: "pair_programming"
+    notes: "Pair programming on Discord, alternating between students for each task."
+    remote_collaboration_perc: 100
+  estimated_total_hours:
+    student_1_hours: 6
+    student_2_hours: 6
+    total_group_hours: 12
+
+initial_context:
+  prior_experience:
+    python: "basic"
+    pandas_numpy: "basic"
+    scikit_learn: "none"
+    machine_learning: "none"
+    classification: "none"
+    feature_selection: "none"
+    optimization: "basic"
+    QUBO: "none"
+    git_github: "basic"
+  initial_confidence:
+    python_project_development: 2
+    qubo_formulation: 1
+    machine_learning: 2
+    debugging: 4
+    validating_llm_outputs: 3
+
+design_choices:
+  correlation_computation: "Absolute Spearman correlation is computed on the training prefix for feature selection."
+  preprocessing_split: "Feature filtering, imputation, and z-score statistics are fitted on the ordered training prefix and then applied to both partitions."
+  QUBO_optimization_algorithm:
+    algorithm_name: "simulated_annealing"
+    library_used: "NumPy"
+    reason_for_choice: "It is suitable for the compact dense QUBO matrix and avoids requiring a specialized commercial solver."
+  classification_algorithm:
+    algorithm_name: "random_forest"
+    library_used: "scikit-learn"
+    reason_for_choice: "Random Forest supports probability estimates and provides a baseline classifier for the reduced numeric feature set."
+  gui_development: "PySide6"
+  problems_encountered:
+    - problem: "The main challenge was matching the QUBO objective, train/test split, and output schemas to the specification."
+      solution: "The implementation validates inputs, computes feature-selection correlations on the training prefix, and writes the required artifacts; automated tests cover the relevant behaviors."
+    - problem: "The positive class is strongly underrepresented, so accuracy alone overstates model performance."
+      solution: "The report includes class-specific precision, recall, and F1 alongside accuracy and ROC-AUC."
+  notes: "The project implements preprocessing, QUBO-based feature selection, classifier training, prediction, evaluation, and a PySide6 GUI."
+
+llm_usage_summary:
+  llms_used:
+    - name: "GitHub Copilot"
+      version: null
+      paid_subscription: false
+      usage_level_0_to_3:
+        value: 3
+  phases_where_llm_was_used:
+    requirements_understanding:
+      usage_level_0_to_3: 3
+      usefulness_1_to_5: 5
+      notes: "The LLM helped interpret the specification and turn it into an implementation checklist."
+    preprocessing:
+      usage_level_0_to_3: 3
+      usefulness_1_to_5: 5
+      notes: "The LLM assisted with data-cleaning and normalization logic, which was then reviewed and tested."
+    qubo_formulation:
+      usage_level_0_to_3: 3
+      usefulness_1_to_5: 5
+      notes: "The LLM assisted with the QUBO objective, alpha sweep, and feature-selection implementation."
+    optimizer_selection:
+      usage_level_0_to_3: 3
+      usefulness_1_to_5: 5
+      notes: "The LLM helped evaluate the simulated-annealing approach for optimization."
+    classifier_selection:
+      usage_level_0_to_3: 3
+      usefulness_1_to_5: 5
+      notes: "The LLM helped compare classification options and their required outputs."
+    debugging:
+      usage_level_0_to_3: 3
+      usefulness_1_to_5: 5
+      notes: "The LLM assisted with debugging paths, data shapes, and logic across project stages."
+    testing:
+      usage_level_0_to_3: 2
+      usefulness_1_to_5: 4
+      notes: "The LLM suggested validation scenarios that were checked against the implementation."
+    documentation:
+      usage_level_0_to_3: 1
+      usefulness_1_to_5: 3
+      notes: "The LLM was used to refine wording and organization of project documentation."
+    gui:
+      usage_level_0_to_3: 2
+      usefulness_1_to_5: 4
+      notes: "The LLM assisted with the PySide6 interface and workflow presentation."
+  estimated_llm_contribution:
+    percent_code_generated_or_suggested_by_llm: 90
+    percent_code_accepted_without_major_changes: 85
+    percent_documentation_generated_or_suggested_by_llm: 30
+  human_verification:
+    methods_used:
+      code_execution: "yes"
+      automated_tests: "yes"
+      critical_reading: "yes"
+      comparison_with_other_llm: "no"
+    notes: "We validated generated code through execution, automated tests, and manual review."
+  llm_misleading_outputs:
+    encountered: "no"
+    examples_count: 0
+    categories:
+      wrong_python_code: "no"
+      wrong_library_usage: "no"
+      wrong_qubo_formulation: "no"
+      wrong_ml_methodology: "no"
+      hallucinated_api_or_function: "no"
+      other: "none"
+    impact_on_project: "very low"
+  llm_overall_assessment:
+    productivity_improvement_1_to_5: 5
+    learning_support_1_to_5: 5
+    risk_of_overreliance_1_to_5: 4
+    trust_in_llm_outputs_1_to_5: 4
+    would_use_again: "yes"
+    notes: "LLM assistance accelerated development, but technical suggestions still required review and execution-based validation."
+  most_useful_project_activity: "Implementation support for preprocessing, QUBO feature selection, and debugging."
+  most_difficult_project_activity: "Translating the specification into the required mathematical formulation and output formats."
+  main_lessons_learned:
+    - "LLM-generated suggestions must be checked against the specification and the actual code."
+    - "Output formats and metrics require careful verification."
+    - "Execution, automated tests, and critical review are necessary to establish correctness."
+  main_problems:
+    - problem: "Some generated code and suggestions required correction for edge cases, package usage, or output compatibility."
+      severity_1_to_5: 3
+      how_resolved: "We reviewed the implementation, executed it, checked its outputs, and refined suggestions where needed."
+
+final_results:
+  what_worked_well:
+    - "The saved pipeline run processed 20,000 records, retained 100 of 146 input features, and selected 20 features for classification."
+    - "The saved Random Forest evaluation produced 98.9% accuracy and a ROC-AUC of 0.967 on 6,000 test records."
+  what_did_not_work_well:
+    - "The test set contains only 128 positive examples out of 6,000; positive-class recall was 56.25%, despite the high overall accuracy."
+    - "The specification can be read as requiring whole-dataset-fitted normalization before splitting while also requiring no test leakage. Preprocessing is fitted on the training prefix and applied to the full dataset before feature selection splits it; this prevents leakage while preserving the pre-split transformation order. Clarification is needed only if all-row-fitted statistics are explicitly required."
+  main_benefit_of_using_llm: "LLM assistance accelerated implementation of preprocessing, QUBO feature selection, and debugging."
+  main_problem_of_using_llm: "Some plausible suggestions were technically incorrect and required independent review and execution."
+  surprising_findings:
+    - "The saved Random Forest run reached 98.9% accuracy and 0.967 ROC-AUC, while positive-class recall was 56.25%; accuracy alone therefore did not describe minority-class performance."
+    - "The QUBO stage selected 20 of the 100 retained features for the saved model run."
+  limitations_of_the_solution:
+    - "The reported metrics describe one saved ordered train/test split and should not be interpreted as evidence of generalization to other datasets."
+    - "The positive class is highly imbalanced, and the classifier does not apply a dedicated class-imbalance correction."
+    - "The evaluation uses one ordered train/test split; results may differ with another split or a dataset whose row order has a different class or feature distribution."
+    - "The recorded metrics come from a saved run and must be regenerated with the training-only preprocessing workflow before final submission."
+  threats_to_validity_from_team_perspective:
+    - "Performance may not generalize beyond the supplied dataset because the evaluation uses one ordered split."
+    - "The metrics depend on the split, preprocessing choices, feature-selection settings, and classifier configuration."

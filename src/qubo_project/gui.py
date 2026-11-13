@@ -45,11 +45,11 @@ if str(src_root) not in sys.path:
 try:
     from qubo_project.feature_selection import select_features
     from qubo_project.model import predict, train
-    from qubo_project.preprocessing import fit_normalize
+    from qubo_project.preprocessing import fit_normalize_for_split
 except ModuleNotFoundError:  # pragma: no cover - fallback for package-style imports
     from src.qubo_project.feature_selection import select_features
     from src.qubo_project.model import predict, train
-    from src.qubo_project.preprocessing import fit_normalize
+    from src.qubo_project.preprocessing import fit_normalize_for_split
 
 
 CLASSIFIERS = [
@@ -605,7 +605,8 @@ class PipelineMainWindow(QMainWindow):
         self.perc_test_spin.setToolTip(
             "Fraction of rows reserved for testing (0.01 to 0.90). The split "
             "preserves row order: the first rows are used for training and the "
-            "remaining rows for testing. Larger values leave fewer rows for training."
+            "remaining rows for testing. Preprocessing fits its feature filter "
+            "and normalization on the training prefix only."
         )
         self.perc_selected_spin.setToolTip(
             "Desired fraction of input features to keep (0 to 1). The optimizer "
@@ -633,7 +634,9 @@ class PipelineMainWindow(QMainWindow):
         layout.addLayout(form)
 
         selection_help = QLabel(
-            "Feature selection uses correlations from the training portion only. "
+            "Feature filtering, normalization, and feature-selection correlations "
+            "are fitted on the training portion only; the learned normalization "
+            "is then applied to both partitions. "
             "If the requested count is not reached within the allowance, the "
             "closest result is kept and the status reports that the target was "
             "not reached. The seed helps reproduce the optimization."
@@ -882,9 +885,8 @@ class PipelineMainWindow(QMainWindow):
         )
         if not path:
             return
-        self.dataset_path = Path(path)
-        self.dataset_path_edit.setText(str(self.dataset_path))
-        self.append_log(f"Dataset selected: {self.dataset_path}")
+        self.dataset_path_edit.setText(path)
+        self.append_log(f"Dataset selected: {path}")
         self._load_dataset()
 
     def _browse_output_dir(self) -> None:
@@ -922,7 +924,13 @@ class PipelineMainWindow(QMainWindow):
         self.classifier_help.setText(CLASSIFIER_DESCRIPTIONS[classifier])
 
     def _on_target_changed(self, target_name: str) -> None:
-        self.current_target = target_name or None
+        selected_target = target_name or None
+        if selected_target != self.current_target:
+            self.normalized_path = None
+            self.preprocessing_stats = {}
+            self.reduced_train_path = None
+            self.reduced_test_path = None
+        self.current_target = selected_target
 
     def _load_dataset(self) -> None:
         path = self.dataset_path_edit.text().strip()
@@ -935,8 +943,14 @@ class PipelineMainWindow(QMainWindow):
             QMessageBox.critical(self, "Dataset error", f"Could not read the CSV file: {exc}")
             return
 
+        selected_path = Path(path)
+        if selected_path != self.dataset_path:
+            self.normalized_path = None
+            self.preprocessing_stats = {}
+            self.reduced_train_path = None
+            self.reduced_test_path = None
         self.current_dataset = dataset
-        self.dataset_path = Path(path)
+        self.dataset_path = selected_path
         self.target_combo.clear()
         self.target_combo.addItems([column for column in dataset.columns])
         if "target" in dataset.columns:
@@ -1005,35 +1019,46 @@ class PipelineMainWindow(QMainWindow):
         self.preview_table.setModel(model)
         self.preview_table.resizeColumnsToContents()
 
-    def _run_preprocessing(self) -> None:
-        if self.current_dataset is None or self.current_target is None:
-            QMessageBox.warning(self, "Dataset not loaded", "Load a CSV dataset before preprocessing.")
-            return
-
+    def _preprocess_dataset_for_split(self, test_fraction: float) -> None:
+        if self.dataset_path is None or self.current_target is None:
+            raise ValueError("Load a CSV dataset before preprocessing.")
         output_dir = self.output_dir / "preprocessing"
         output_dir.mkdir(parents=True, exist_ok=True)
         normalized_path = output_dir / "normalized.csv"
         stats_path = output_dir / "preprocessing_stats.json"
         min_valid = float(self.min_valid_spin.value())
 
+        self.preprocessing_stats = fit_normalize_for_split(
+            str(self.dataset_path),
+            self.current_target,
+            str(normalized_path),
+            str(stats_path),
+            percTest=test_fraction,
+            minPercValid=min_valid,
+        )
+        self.normalized_path = normalized_path
+        dropped = self.preprocessing_stats.get("dropped_feature_names", [])
+        self.preprocessing_drops.setPlainText(
+            "\n".join(dropped) if dropped else "No features dropped."
+        )
+        self.preprocessing_summary.setText(
+            f"Rows: {self.preprocessing_stats.get('dataset_size')} | "
+            f"Kept: {self.preprocessing_stats.get('n_kept_features')} | "
+            f"Dropped: {len(dropped)}"
+        )
+
+    def _run_preprocessing(self) -> None:
+        if self.current_dataset is None or self.current_target is None:
+            QMessageBox.warning(self, "Dataset not loaded", "Load a CSV dataset before preprocessing.")
+            return
+
         self._set_busy(True)
         try:
-            self.preprocessing_stats = fit_normalize(
-                str(self.dataset_path),
-                self.current_target,
-                str(normalized_path),
-                str(stats_path),
-                min_valid,
-            )
-            self.normalized_path = normalized_path
+            test_fraction = float(self.perc_test_spin.value())
+            self._preprocess_dataset_for_split(test_fraction)
             self.statusBar().showMessage("Preprocessing completed")
             self.append_log(
                 f"Preprocessing finished; kept {self.preprocessing_stats.get('n_kept_features')} features."
-            )
-            dropped = self.preprocessing_stats.get("dropped_feature_names", [])
-            self.preprocessing_drops.setPlainText("\n".join(dropped) if dropped else "No features dropped.")
-            self.preprocessing_summary.setText(
-                f"Rows: {self.preprocessing_stats.get('dataset_size')} | Kept: {self.preprocessing_stats.get('n_kept_features')} | Dropped: {len(dropped)}"
             )
             self._show_info_message("Preprocessing completed successfully.")
         except Exception as exc:  # pragma: no cover - GUI path for user errors
@@ -1055,6 +1080,19 @@ class PipelineMainWindow(QMainWindow):
 
         self._set_busy(True)
         try:
+            test_fraction = float(self.perc_test_spin.value())
+            min_valid = float(self.min_valid_spin.value())
+            if (
+                self.preprocessing_stats.get("normalization_test_fraction")
+                != test_fraction
+                or self.preprocessing_stats.get("normalization_min_perc_valid")
+                != min_valid
+            ):
+                self._preprocess_dataset_for_split(test_fraction)
+                self.append_log(
+                    "Preprocessing was re-fitted because the train/test split or "
+                    "feature-validity threshold changed."
+                )
             self.selection_stats = select_features(
                 str(self.normalized_path),
                 str(train_path),
@@ -1062,7 +1100,7 @@ class PipelineMainWindow(QMainWindow):
                 str(optimization_path),
                 str(stats_path),
                 self.current_target or "target",
-                percTest=float(self.perc_test_spin.value()),
+                percTest=test_fraction,
                 percSelected=float(self.perc_selected_spin.value()),
                 allowance=int(self.allowance_spin.value()),
                 seed=int(self.selection_seed_spin.value()),

@@ -1,5 +1,5 @@
 {
-  "classifier": "decision_tree",
+  "classifier": "random_forest",
   "seed": 42,
   "training_dataset": "C:\\Users\\rugge\\Documents\\GitHub\\isw-qubo-classification-G47\\outputs\\feature_selection\\reduced_train.csv",
   "target_column": "target",
@@ -7,6 +7,6 @@
   "n_samples": 14000,
   "n_features": 20,
   "target_1_percentage": 1.4571428571428573,
-  "dataset_input_time": 0.014230400000087684,
-  "training_time": 0.05437009999877773
+  "dataset_input_time": 0.014171400001941947,
+  "training_time": 0.1570346000007703
 }

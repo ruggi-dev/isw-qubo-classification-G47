@@ -7,6 +7,7 @@ large input datasets do not need to fit in RAM.
 
 from __future__ import annotations
 
+import argparse
 import csv
 import json
 import math
@@ -14,7 +15,7 @@ import os
 import tempfile
 import time
 from pathlib import Path
-from typing import TextIO
+from typing import Sequence, TextIO
 
 import numpy as np
 import pandas as pd
@@ -523,3 +524,75 @@ def select_features(
         for temporary_path in temporary_outputs:
             if temporary_path.exists():
                 temporary_path.unlink()
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    """Run QUBO feature selection and the ordered train/test split from CLI."""
+    parser = argparse.ArgumentParser(
+        description="Select features with QUBO and split the reduced dataset."
+    )
+    parser.add_argument(
+        "--in-normalized", required=True, help="Preprocessed input CSV"
+    )
+    parser.add_argument("--out-train", required=True, help="Reduced training CSV")
+    parser.add_argument("--out-test", required=True, help="Reduced test CSV")
+    parser.add_argument(
+        "--out-optimizations", required=True, help="Optimization results CSV"
+    )
+    parser.add_argument("--out-json", required=True, help="Feature-selection statistics JSON")
+    parser.add_argument("--target", required=True, help="Target column name")
+    parser.add_argument(
+        "--perc-selected",
+        type=float,
+        default=0.20,
+        help="Desired fraction of features to select (default: 0.20)",
+    )
+    parser.add_argument(
+        "--allowance",
+        type=int,
+        default=1,
+        help="Allowed difference from the desired feature count (default: 1)",
+    )
+    parser.add_argument(
+        "--perc-test",
+        type=float,
+        default=0.30,
+        help="Fraction of rows assigned to the test set (default: 0.30)",
+    )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=42,
+        help="Non-negative random seed (default: 42)",
+    )
+    parser.add_argument(
+        "--alpha-computations",
+        type=int,
+        default=100,
+        help="Maximum number of alpha values to evaluate (default: 100)",
+    )
+    args = parser.parse_args(argv)
+
+    try:
+        select_features(
+            normalized_csv=args.in_normalized,
+            reducedTrain_csv=args.out_train,
+            reducedTest_csv=args.out_test,
+            output_ottim_csv=args.out_optimizations,
+            output_json=args.out_json,
+            target_column=args.target,
+            percTest=args.perc_test,
+            percSelected=args.perc_selected,
+            allowance=args.allowance,
+            seed=args.seed,
+            alpha_computations=args.alpha_computations,
+        )
+    except (OSError, ValueError) as exc:
+        parser.error(str(exc))
+
+    print("Feature selection completed successfully.")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

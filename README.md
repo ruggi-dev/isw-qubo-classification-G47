@@ -54,9 +54,10 @@ virtual environment activated.
 
 The preprocessing command filters features according to the minimum proportion
 of non-missing, non-zero values, then z-score normalizes the retained features.
-Missing values in retained features are imputed with the column mean. The
-target column is preserved without normalization and must contain only `0`
-and `1`.
+For a train/test workflow, feature filtering and normalization statistics are
+fitted on the ordered training prefix only, then applied to all rows. Missing
+values in retained features are imputed with the training mean. The target
+column is preserved without normalization and must contain only `0` and `1`.
 
 To see all available options:
 
@@ -64,15 +65,18 @@ To see all available options:
 python src\qubo_project\preprocessing.py --help
 ```
 
-Example using the included dataset (`data/trial_dataset_ISW.csv`) and its
-`target` column:
+For a quick, balanced pipeline test, use the included synthetic dataset
+(`data/sample_test_dataset.csv`). It has 20 rows, three numeric features, and
+both target classes make up 50% of the data. The larger
+`data/trial_dataset_ISW.csv` dataset is also included.
 
 ```powershell
 python src\qubo_project\preprocessing.py `
-  --input data\trial_dataset_ISW.csv `
+  --input data\sample_test_dataset.csv `
   --target target `
   --out-data outputs\normalized.csv `
   --out-json outputs\preprocessing_stats.json `
+  --perc-test 0.30 `
   --min-perc-valid 0.05
 ```
 
@@ -84,49 +88,88 @@ python src/qubo_project/preprocessing.py \
   --target target \
   --out-data outputs/normalized.csv \
   --out-json outputs/preprocessing_stats.json \
+  --perc-test 0.30 \
   --min-perc-valid 0.05
 ```
 
 `--min-perc-valid` accepts a number between `0` and `1` and defaults to `0.05`
 (5%). The JSON output includes the number of retained features and the names of
-the dropped features, among other statistics. On success, the terminal prints
-only a completion confirmation; the results are saved to the specified files.
+the dropped features, training/test row counts, and fitted split fraction,
+among other statistics. Use the same `--perc-test` value in preprocessing and
+feature selection. On success, the terminal prints only a completion
+confirmation; the results are saved to the specified files.
+
+The specification-compatible `fit_normalize` Python function fits using every
+row supplied to it. For leakage-safe train/test preprocessing in Python code,
+use `fit_normalize_for_split` and pass the same `percTest` value later used by
+`select_features`.
 
 ### 2. Feature selection and train/test split
 
-Feature selection does not have a standalone CLI command; it is available as
-the Python function `select_features`. It calculates correlations on the
-training prefix, runs simulated annealing, and writes reduced training and test
-datasets, optimization results, and statistics.
+Feature selection calculates correlations on the training prefix, runs
+simulated annealing, and writes reduced training and test datasets,
+optimization results, and statistics.
 
-Run this command from either PowerShell or Linux/WSL:
+To see all available options:
 
 ```powershell
-python -c "import sys; sys.path.insert(0, 'src'); from qubo_project.feature_selection import select_features; select_features('outputs/normalized.csv', 'outputs/reduced_train.csv', 'outputs/reduced_test.csv', 'outputs/optimization.csv', 'outputs/feature_selection_stats.json', 'target'); print('Feature selection completed successfully.')"
+python src\qubo_project\feature_selection.py --help
 ```
 
-On success, the command prints only a completion confirmation. The statistics
-are written to the JSON file, not printed to the terminal.
+Example using the normalized dataset produced in the previous step:
 
-The positional arguments are, in order: normalized input CSV, reduced training
-CSV, reduced test CSV, optimization CSV, statistics JSON, and target column
-name. Optional parameters are:
+```powershell
+python src\qubo_project\feature_selection.py `
+  --in-normalized outputs\normalized.csv `
+  --out-train outputs\reduced_train.csv `
+  --out-test outputs\reduced_test.csv `
+  --out-optimizations outputs\optimization.csv `
+  --out-json outputs\feature_selection_stats.json `
+  --target target `
+  --perc-selected 0.20 `
+  --allowance 1 `
+  --perc-test 0.30 `
+  --seed 42 `
+  --alpha-computations 100
+```
 
-- `percTest=0.30`: fraction of rows assigned to the test set. The split
+In WSL/Linux, use forward slashes and `\` line continuations:
+
+```bash
+python src/qubo_project/feature_selection.py \
+  --in-normalized outputs/normalized.csv \
+  --out-train outputs/reduced_train.csv \
+  --out-test outputs/reduced_test.csv \
+  --out-optimizations outputs/optimization.csv \
+  --out-json outputs/feature_selection_stats.json \
+  --target target \
+  --perc-selected 0.20 \
+  --allowance 1 \
+  --perc-test 0.30 \
+  --seed 42 \
+  --alpha-computations 100
+```
+
+On success, the command prints only a completion confirmation. Statistics and
+optimization results are saved to the specified files. The optional parameters
+are:
+
+- `--perc-test 0.30`: fraction of rows assigned to the test set. The split
   preserves row order.
-- `percSelected=0.20`: desired fraction of features to select.
-- `allowance=1`: tolerance for the desired number of selected features.
-- `seed=42`: non-negative optimization seed.
-- `alpha_computations=100`: maximum number of alpha values to evaluate.
+- `--perc-selected 0.20`: desired fraction of features to select.
+- `--allowance 1`: tolerance for the desired number of selected features.
+- `--seed 42`: non-negative optimization seed.
+- `--alpha-computations 100`: maximum number of alpha values to evaluate.
 
-For example, to set optional parameters, add
-`percTest=0.25, percSelected=0.15, allowance=2, seed=7` to the Python function
-call. If the requested feature count is not reached within the tolerance, the
-closest result is still selected and `target_reached` is set to `false` in the
-JSON output.
+If the requested feature count is not reached within the tolerance, the closest
+result is still selected and `target_reached` is set to `false` in the JSON
+output.
 
-The train/test split occurs after preprocessing, which normalizes the complete
-dataset. Consequently, test-set statistics contribute to normalization.
+The normalized CSV contains both partitions, but test rows do not contribute
+to feature-validity filtering, imputation, or normalization statistics.
+Feature selection then uses the same ordered split and computes correlations
+from the training prefix only. Keep `--perc-test` identical in both commands
+so the preprocessing fit rows and feature-selection training rows match.
 Constant features remain in the normalized CSV but are treated as having zero
 Spearman correlation and are not selected. Feature selection fails with an
 error if the training target contains only one class.
@@ -244,11 +287,17 @@ By default, the GUI saves results under `outputs/`:
 
 ## Tests
 
-From the project root, with the dependencies installed, run:
+Pytest is included in `requirements.txt`. From the project root, install the
+dependencies and run:
 
 ```powershell
-python -m unittest discover -s tests -v
+python -m pip install -r requirements.txt
+python -m pytest -v
 ```
 
-In Linux/WSL, use `python3` instead of `python` if that is the configured
-command for Python 3.
+In Linux/WSL, use `python3` instead:
+
+```bash
+python3 -m pip install -r requirements.txt
+python3 -m pytest -v
+```

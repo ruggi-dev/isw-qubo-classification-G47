@@ -65,19 +65,24 @@ def _temporary_path(destination: Path) -> Path:
         return Path(temporary_file.name)
 
 
-def fit_normalize(
+def _fit_normalize(
     input_csv: str,
     target_column: str,
     normalized_csv: str,
-    outputInitialRes_json: str,
+    outInitalRes_json: str,
     minPercValid: float = 0.05,
+    *,
+    fit_rows: int | None = None,
+    test_fraction: float | None = None,
+    started_at: float | None = None,
 ) -> dict[str, int | float | list[str]]:
     """Filter and z-score normalize the feature columns of a CSV dataset.
 
     The target column is validated as binary (0 or 1) and copied unchanged.
     A feature is retained when its fraction of non-missing, non-zero values
-    across all data rows is greater than or equal to ``minPercValid``.
-    Retained features are normalized using their population standard deviation.
+    in the fitting rows is greater than or equal to ``minPercValid``.
+    Retained features are normalized using their population standard deviation
+    in the fitting rows.
 
     Missing values in retained features are imputed with the mean of the
     observed values in that column, so their normalized output is zero.
@@ -87,16 +92,20 @@ def fit_normalize(
 
     The CSV is read twice: the first pass validates the data and calculates
     feature statistics using bounded memory, and the second writes normalized
-    output. This avoids loading potentially large verification datasets into
-    memory.
+    output. Train/test preprocessing also performs a bounded-memory row count
+    before these passes.
 
     Args:
         input_csv: Path to the input CSV, which must include a header row.
         target_column: Name of the binary target column.
         normalized_csv: Destination path for the normalized CSV.
-        outputInitialRes_json: Destination path for preprocessing statistics.
+        outInitalRes_json: Destination path for preprocessing statistics.
         minPercValid: Minimum fraction of non-missing, non-zero values required
             to retain a feature. Must be between 0 and 1, inclusive.
+        fit_rows: Number of leading rows used to fit feature filtering and
+            normalization. When ``None``, all rows are used.
+        test_fraction: Test fraction recorded when fitting on a training prefix.
+        started_at: Optional start time including work done before this function.
 
     Returns:
         A dictionary containing the preprocessing statistics written to JSON:
@@ -119,7 +128,7 @@ def fit_normalize(
 
     input_path = Path(input_csv)
     normalized_path = Path(normalized_csv)
-    statistics_path = Path(outputInitialRes_json)
+    statistics_path = Path(outInitalRes_json)
     resolved_input = input_path.resolve()
     resolved_outputs = (normalized_path.resolve(), statistics_path.resolve())
     if resolved_input in resolved_outputs:
@@ -127,7 +136,7 @@ def fit_normalize(
     if resolved_outputs[0] == resolved_outputs[1]:
         raise ValueError("The normalized CSV and statistics JSON must have different paths")
 
-    start_time = time.perf_counter()
+    start_time = started_at if started_at is not None else time.perf_counter()
     input_start = start_time
     row_count = 0
     headers: list[str]
@@ -190,6 +199,8 @@ def fit_normalize(
                     )
                     if value is None:
                         continue
+                    if fit_rows is not None and row_count > fit_rows:
+                        continue
 
                     value_counts[feature_position] += 1
                     if value != 0:
@@ -203,12 +214,15 @@ def fit_normalize(
         input_time = time.perf_counter() - input_start
         if row_count == 0:
             raise ValueError("The input CSV contains a header but no data rows")
+        if fit_rows is not None and not 2 <= fit_rows < row_count:
+            raise ValueError("The training prefix must contain at least two rows and leave test rows")
 
+        statistics_row_count = fit_rows if fit_rows is not None else row_count
         kept_positions = [
             position
             for position, count in enumerate(nonzero_counts)
-            # The denominator is all dataset rows, including missing values.
-            if count / row_count >= threshold
+            # Missing values count against validity in the fitting rows.
+            if count / statistics_row_count >= threshold
         ]
         kept_positions_set = set(kept_positions)
         dropped_feature_names = [
@@ -294,6 +308,17 @@ def fit_normalize(
                 "dataset_processing_time": time.perf_counter() - start_time,
                 "dropped_feature_names": dropped_feature_names,
             }
+            if fit_rows is not None:
+                statistics.update(
+                    {
+                        "normalization_training_rows": fit_rows,
+                        "normalization_test_rows": row_count - fit_rows,
+                        "normalization_test_fraction": (
+                            test_fraction if test_fraction is not None else 0.0
+                        ),
+                        "normalization_min_perc_valid": threshold,
+                    }
+                )
             statistics_temp = _temporary_path(statistics_path)
             with statistics_temp.open("w", encoding="utf-8", newline="") as json_file:
                 json.dump(statistics, json_file, indent=2)
@@ -310,17 +335,96 @@ def fit_normalize(
         raise ValueError(f"Could not parse input CSV: {exc}") from exc
 
 
+def fit_normalize(
+    input_csv: str,
+    target_column: str,
+    normalized_csv: str,
+    outInitalRes_json: str,
+    minPercValid: float = 0.05,
+) -> dict[str, int | float | list[str]]:
+    """Filter and normalize a CSV using statistics from all supplied rows.
+
+    For a train/test workflow, use :func:`fit_normalize_for_split` so held-out
+    rows do not influence feature filtering or normalization statistics.
+    """
+    return _fit_normalize(
+        input_csv,
+        target_column,
+        normalized_csv,
+        outInitalRes_json,
+        minPercValid,
+    )
+
+
+def _count_dataset_rows(input_csv: str) -> int:
+    try:
+        with Path(input_csv).open("r", encoding="utf-8-sig", newline="") as input_file:
+            reader = csv.reader(input_file)
+            try:
+                next(reader)
+            except StopIteration as exc:
+                raise ValueError("The input CSV is empty or has no header row") from exc
+            return sum(1 for _ in reader)
+    except csv.Error as exc:
+        raise ValueError(f"Could not parse input CSV: {exc}") from exc
+
+
+def fit_normalize_for_split(
+    input_csv: str,
+    target_column: str,
+    normalized_csv: str,
+    outInitalRes_json: str,
+    percTest: float = 0.30,
+    minPercValid: float = 0.05,
+) -> dict[str, int | float | list[str]]:
+    """Fit preprocessing on the ordered training prefix and transform all rows.
+
+    Use the same ``percTest`` value for the later feature-selection split.
+    The full normalized CSV is written before that split, but test rows do not
+    influence filtering, imputation, or z-score statistics.
+    """
+    try:
+        test_fraction = float(percTest)
+    except (TypeError, ValueError) as exc:
+        raise ValueError("percTest must be a number strictly between 0 and 1") from exc
+    if not math.isfinite(test_fraction) or not 0 < test_fraction < 1:
+        raise ValueError("percTest must be a finite number strictly between 0 and 1")
+
+    started_at = time.perf_counter()
+    dataset_size = _count_dataset_rows(input_csv)
+    training_rows = int(dataset_size * (1.0 - test_fraction))
+    if training_rows < 2 or dataset_size - training_rows < 1:
+        raise ValueError("The requested percTest produces an unusable train/test split")
+
+    return _fit_normalize(
+        input_csv,
+        target_column,
+        normalized_csv,
+        outInitalRes_json,
+        minPercValid,
+        fit_rows=training_rows,
+        test_fraction=test_fraction,
+        started_at=started_at,
+    )
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     """Run preprocessing from the command line.
 
-    The CLI exposes the same inputs as :func:`fit_normalize`; validation
-    failures are reported through argparse with a non-zero process exit code.
+    The CLI fits preprocessing on the ordered training prefix and applies it to
+    all rows. Its ``--perc-test`` value must match the feature-selection split.
     """
     parser = argparse.ArgumentParser(description="Normalize a numeric CSV dataset.")
     parser.add_argument("--input", required=True, help="Input CSV dataset")
     parser.add_argument("--target", required=True, help="Target column name")
     parser.add_argument("--out-data", required=True, help="Normalized output CSV")
     parser.add_argument("--out-json", required=True, help="Preprocessing statistics JSON")
+    parser.add_argument(
+        "--perc-test",
+        type=float,
+        default=0.30,
+        help="Test fraction; use the same value for feature selection (default: 0.30)",
+    )
     parser.add_argument(
         "--min-perc-valid",
         type=float,
@@ -330,11 +434,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     try:
-        fit_normalize(
+        fit_normalize_for_split(
             args.input,
             args.target,
             args.out_data,
             args.out_json,
+            args.perc_test,
             args.min_perc_valid,
         )
     except (OSError, ValueError) as exc:
